@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
@@ -19,11 +17,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.altafjava.pojo.Counter;
+import com.altafjava.pojo.Pojo;
 import com.monitorjbl.xlsx.StreamingReader;
 
 public class ExcelReportGenerationService {
 
-	static private void createExcelFile(List<Pojo> pojos) {
+	static private void createExcelFile(List<Pojo> pojos, String fileName) {
 		Workbook workbook = new XSSFWorkbook();
 		Sheet sheet = workbook.createSheet("report");
 		Font headerFont = workbook.createFont();
@@ -33,7 +33,7 @@ public class ExcelReportGenerationService {
 		CellStyle headerCellStyle = workbook.createCellStyle();
 		headerCellStyle.setFont(headerFont);
 		Row headerRow = sheet.createRow(0);
-		String[] columns = new String[] { "Date", "Hospital District", "Hospital Name", "No. Preauth initiated", "No. of Preauth Arrpoved", "No. Patient Discharge",
+		String[] columns = new String[] { "Date", "Hospital District", "Hospital Name", "No. Preauth initiated", "No. of Preauth Approved", "No. Patient Discharge",
 				"No.Claim Initiated " };
 		for (int i = 0; i < columns.length; i++) {
 			Cell cell = headerRow.createCell(i);
@@ -56,22 +56,24 @@ public class ExcelReportGenerationService {
 		}
 
 		try {
-			FileOutputStream fileOut = new FileOutputStream("src/main/resources/altaf.xlsx");
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/files/" + fileName + "-Output.xlsx");
 			workbook.write(fileOut);
 			fileOut.close();
 			workbook.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.err.println("---------------- excel file created successdully ------------ ");
+		System.err.println("---------------- Excel Report file created successfully ------------ ");
 	}
 
 	public static void main(String[] args) {
 		int count = 0;
 		try {
-			InputStream is = new FileInputStream(new File("src/main/resources/21-11-2019.xlsx"));
+//			String fileName = "CasesSearchReport-26-11-19.xlsx";
+			String fileName = "21-11-2019.xlsx";
+			String path = "src/main/resources/files/" + fileName;
+			InputStream is = new FileInputStream(new File(path));
 			StreamingReader reader = StreamingReader.builder().rowCacheSize(100).bufferSize(4096).sheetIndex(1).read(is);
-			Set<String> set = new LinkedHashSet<>();
 			Map<String, Counter> map = new LinkedHashMap<>();
 			Map<String, String> admissionDateMap = new LinkedHashMap<>();
 			for (Row row : reader) {
@@ -80,7 +82,6 @@ public class ExcelReportGenerationService {
 					String admissionDate = row.getCell(19).getStringCellValue();
 					String hospitalDistrict = row.getCell(16).getStringCellValue();
 					String hospitalName = row.getCell(14).getStringCellValue();
-
 					String preauthDate = row.getCell(20).getStringCellValue();
 					String preauthApprovedDate = row.getCell(22).getStringCellValue();
 					String dischargeDate = row.getCell(27).getStringCellValue();
@@ -131,118 +132,11 @@ public class ExcelReportGenerationService {
 				pojo.setNoOfPreauthDate(counter.getNoOfPreauthDate());
 				pojos.add(pojo);
 			}
-			createExcelFile(pojos);
+			createExcelFile(pojos, fileName);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		System.err.println("Total Count=" + count);
-	}
-
-}
-
-class Pojo {
-	private String date;
-	private String hospitalDistrict;
-	private String hospitalName;
-	int noOfPreauthDate;
-	int noOfPreauthApprovedDate;
-	int noOfDischargeDate;
-	int noOfClaimSubmittedDate;
-
-	public String getDate() {
-		return date;
-	}
-
-	public void setDate(String date) {
-		this.date = date;
-	}
-
-	public String getHospitalDistrict() {
-		return hospitalDistrict;
-	}
-
-	public void setHospitalDistrict(String hospitalDistrict) {
-		this.hospitalDistrict = hospitalDistrict;
-	}
-
-	public String getHospitalName() {
-		return hospitalName;
-	}
-
-	public void setHospitalName(String hospitalName) {
-		this.hospitalName = hospitalName;
-	}
-
-	public int getNoOfPreauthDate() {
-		return noOfPreauthDate;
-	}
-
-	public void setNoOfPreauthDate(int noOfPreauthDate) {
-		this.noOfPreauthDate = noOfPreauthDate;
-	}
-
-	public int getNoOfPreauthApprovedDate() {
-		return noOfPreauthApprovedDate;
-	}
-
-	public void setNoOfPreauthApprovedDate(int noOfPreauthApprovedDate) {
-		this.noOfPreauthApprovedDate = noOfPreauthApprovedDate;
-	}
-
-	public int getNoOfDischargeDate() {
-		return noOfDischargeDate;
-	}
-
-	public void setNoOfDischargeDate(int noOfDischargeDate) {
-		this.noOfDischargeDate = noOfDischargeDate;
-	}
-
-	public int getNoOfClaimSubmittedDate() {
-		return noOfClaimSubmittedDate;
-	}
-
-	public void setNoOfClaimSubmittedDate(int noOfClaimSubmittedDate) {
-		this.noOfClaimSubmittedDate = noOfClaimSubmittedDate;
-	}
-
-}
-
-class Counter {
-	int noOfPreauthDate;
-	int noOfPreauthApprovedDate;
-	int noOfDischargeDate;
-	int noOfClaimSubmittedDate;
-
-	public int getNoOfPreauthDate() {
-		return noOfPreauthDate;
-	}
-
-	public void setNoOfPreauthDate(int noOfPreauthDate) {
-		this.noOfPreauthDate = noOfPreauthDate;
-	}
-
-	public int getNoOfPreauthApprovedDate() {
-		return noOfPreauthApprovedDate;
-	}
-
-	public void setNoOfPreauthApprovedDate(int noOfPreauthApprovedDate) {
-		this.noOfPreauthApprovedDate = noOfPreauthApprovedDate;
-	}
-
-	public int getNoOfDischargeDate() {
-		return noOfDischargeDate;
-	}
-
-	public void setNoOfDischargeDate(int noOfDischargeDate) {
-		this.noOfDischargeDate = noOfDischargeDate;
-	}
-
-	public int getNoOfClaimSubmittedDate() {
-		return noOfClaimSubmittedDate;
-	}
-
-	public void setNoOfClaimSubmittedDate(int noOfClaimSubmittedDate) {
-		this.noOfClaimSubmittedDate = noOfClaimSubmittedDate;
 	}
 
 }
